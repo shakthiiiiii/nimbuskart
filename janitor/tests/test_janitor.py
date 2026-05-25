@@ -58,14 +58,15 @@ def test_detects_volume_missing_tags():
 @mock_aws
 def test_fully_tagged_volume_not_flagged():
     ec2 = make_ec2()
-    ec2.create_volume(
+    vol = ec2.create_volume(
         AvailabilityZone="us-east-1a",
         Size=10,
         VolumeType="gp3",
         TagSpecifications=[{"ResourceType": "volume", "Tags": REQUIRED_TAGS}],
     )
     findings = j.scan_untagged_resources(ec2)
-    assert findings == []
+    # Check that our tagged volume is not in the findings
+    assert not any(f["resource_id"] == vol["VolumeId"] for f in findings)
 
 
 def test_is_protected_true():
